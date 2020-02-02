@@ -1,9 +1,9 @@
 #pragma once
-#include <Windows.h>
-#include <iostream>
 
-//int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd);
-LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+#include "Includes.h"
+#include "WinMain.h"
+
+#include <sstream>
 
 int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 {
@@ -29,7 +29,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	ShowWindow(hWnd, SW_SHOW);
 	MSG msg;
 	BOOL gResult;
-	while ((gResult = GetMessage(&msg, nullptr, 0, 0)) > 0)
+	while (gResult = GetMessage(&msg, nullptr, 0, 0) > 0)
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
@@ -37,13 +37,26 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	return gResult == -1 ? -1 : msg.wParam;
 }
 
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wpram, LPARAM lpram)
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wPram, LPARAM lPram)
 {
+	std::ostringstream oss;
 	switch (msg)
 	{
 	case WM_CLOSE:
 		PostQuitMessage(0);
 		break;
+	case WM_KEYDOWN:
+
+		break;
+	case WM_CHAR:
+		oss << wPram << '\n' << static_cast<char>(wPram) << '\n';
+		OutputDebugString(oss.str().c_str());
+		break;
+	case WM_LBUTTONDOWN:
+		POINTS pt = MAKEPOINTS(lPram);
+		oss << '(' << pt.x << ", " << pt.y << ")\n";
+		OutputDebugString(oss.str().c_str());
+		break;
 	}
-	return DefWindowProc(hwnd, msg, wpram, lpram);
+	return DefWindowProc(hwnd, msg, wPram, lPram);
 }
