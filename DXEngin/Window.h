@@ -6,7 +6,21 @@
 
 class Window
 {
+public:
+	Window(int width, int height, const char* name) noexcept;
+	~Window();
+	static int GetWindowCount();
+	Window(const Window&) = delete;
+	Window& operator=(const Window&) = delete;
+	static int windowCount;
+	int width;
+	int height;
+	const char* name;
+	HWND hWnd;
 private:
+	static LRESULT CALLBACK HandleMsgSetup(HWND, UINT, WPARAM, LPARAM) noexcept;
+	static LRESULT CALLBACK HandleMsgThunk(HWND, UINT, WPARAM, LPARAM) noexcept;
+	LRESULT HandleMsg(HWND, UINT, WPARAM, LPARAM) noexcept;
 	class WindowClass
 	{
 	public:
@@ -21,17 +35,4 @@ private:
 		static WindowClass wndClass;
 		HINSTANCE hInst;
 	};
-public:
-	Window(int width, int height, const char* name) noexcept;
-	~Window();
-	Window(const Window&) = delete;
-	Window& operator=(const Window&) = delete;
-private:
-	static LRESULT CALLBACK HandleMsgSetup(HWND, UINT, WPARAM, LPARAM) noexcept;
-	static LRESULT CALLBACK HandleMsgThunk(HWND, UINT, WPARAM, LPARAM) noexcept;
-	LRESULT HandleMsg(HWND, UINT, WPARAM, LPARAM) noexcept;
-private:
-	int width;
-	int height;
-	HWND hWnd;
 };

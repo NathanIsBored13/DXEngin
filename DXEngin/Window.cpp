@@ -2,6 +2,8 @@
 
 Window::WindowClass Window::WindowClass::wndClass;
 
+int Window::windowCount;
+
 Window::WindowClass::WindowClass() noexcept : hInst(GetModuleHandle(nullptr))
 {
 	WNDCLASSEX wnd =
@@ -41,6 +43,7 @@ Window::Window(int width, int height, const char* name) noexcept
 {
 	this->width = width;
 	this->height = height;
+	this->name = name;
 	RECT wr;
 	wr.left = 100;
 	wr.right = width + wr.left;
@@ -49,11 +52,17 @@ Window::Window(int width, int height, const char* name) noexcept
 	AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE);
 	hWnd = CreateWindow(WindowClass::GetName(), name, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top, nullptr, nullptr, WindowClass::GetInstance(), this);
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
+	windowCount++;
 }
 
 Window::~Window()
 {
 	DestroyWindow(hWnd);
+}
+
+int Window::GetWindowCount()
+{
+	return windowCount;
 }
 
 LRESULT CALLBACK Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)  noexcept
@@ -77,15 +86,15 @@ LRESULT CALLBACK Window::HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 
 LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
+
 	std::ostringstream oss;
-	char buffer[256];
 	switch (msg)
 	{
 	case WM_CLOSE:
 		PostQuitMessage(0);
-		GetWindowText(hWnd, buffer, sizeof(buffer));
-		oss << "closed " << buffer << '\n';
+		oss << "closed " << name << '\n';
 		OutputDebugString(oss.str().c_str());
+		windowCount--;
 		this->~Window();
 		return 0;
 		break;
@@ -93,14 +102,12 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 
 		break;
 	case WM_CHAR:
-		GetWindowText(hWnd, buffer, sizeof(buffer));
-		oss << buffer << ": " << wParam << '\n' << static_cast<char>(wParam) << '\n';
+		oss << name << ": " << static_cast<char>(wParam) << '\n';
 		OutputDebugString(oss.str().c_str());
 		break;
 	case WM_LBUTTONDOWN:
 		POINTS pt = MAKEPOINTS(lParam);
-		GetWindowText(hWnd, buffer, sizeof(buffer));
-		oss << buffer << ": (" << pt.x << ", " << pt.y << ") [" << width << ", " << height << "]\n";
+		oss << name << ": (" << pt.x << ", " << pt.y << ")\n";
 		OutputDebugString(oss.str().c_str());
 		break;
 	}
