@@ -1,10 +1,10 @@
 #include "Window.h"
 
-Window::WindowClass Window::WindowClass::wndClass;
-
+Window::WindowTemplate Window::WindowTemplate::wndClass;
+std::vector<Window*> Window::windows;
 int Window::windowCount;
 
-Window::WindowClass::WindowClass() noexcept : hInst(GetModuleHandle(nullptr))
+Window::WindowTemplate::WindowTemplate() noexcept : hInst(GetModuleHandle(nullptr))
 {
 	WNDCLASSEX wnd =
 	{
@@ -24,35 +24,39 @@ Window::WindowClass::WindowClass() noexcept : hInst(GetModuleHandle(nullptr))
 	RegisterClassEx(&wnd);
 }
 
-Window::WindowClass::~WindowClass()
+Window::WindowTemplate::~WindowTemplate()
 {
 	UnregisterClass(wndClassName, GetInstance());
 }
 
-const char* Window::WindowClass::GetName() noexcept
+const char* Window::WindowTemplate::GetName() noexcept
 {
 	return wndClassName;
 }
 
-HINSTANCE Window::WindowClass::GetInstance() noexcept
+HINSTANCE Window::WindowTemplate::GetInstance() noexcept
 {
 	return wndClass.hInst;
 }
 
 Window::Window(int width, int height, const char* name) noexcept
 {
+	static std::vector<Window*> windows;
 	this->width = width;
 	this->height = height;
 	this->name = name;
+	exitCode = 0;
 	RECT wr;
 	wr.left = 100;
 	wr.right = width + wr.left;
 	wr.top = 100;
 	wr.bottom = height + wr.top;
 	AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE);
-	hWnd = CreateWindow(WindowClass::GetName(), name, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top, nullptr, nullptr, WindowClass::GetInstance(), this);
+	hWnd = CreateWindow(WindowTemplate::GetName(), name, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top, nullptr, nullptr, WindowTemplate::GetInstance(), this);
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
-	windowCount++;
+	Window::windowCount++;
+	index = Window::windows.size();
+	Window::windows.push_back(this);
 }
 
 Window::~Window()
@@ -60,9 +64,17 @@ Window::~Window()
 	DestroyWindow(hWnd);
 }
 
-int Window::GetWindowCount()
+bool Window::AreActiveWindows()
 {
-	return windowCount;
+	return windowCount > 0;
+}
+
+int Window::DeconstructWindow(int index)
+{
+	int ret = Window::windows[index]->exitCode;
+	Window::windows[index]->~Window();
+	Window::windowCount--;
+	return ret;
 }
 
 LRESULT CALLBACK Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)  noexcept
@@ -80,26 +92,22 @@ LRESULT CALLBACK Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 
 LRESULT CALLBACK Window::HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)  noexcept
 {
-	Window* const pWind = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
-	return pWind->HandleMsg(hWnd, msg, wParam, lParam);
+	return reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA))->HandleMsg(hWnd, msg, wParam, lParam);
 }
 
 LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
-
 	std::ostringstream oss;
 	switch (msg)
 	{
 	case WM_CLOSE:
-		PostQuitMessage(0);
 		oss << "closed " << name << '\n';
 		OutputDebugString(oss.str().c_str());
-		windowCount--;
-		this->~Window();
+		exitCode = 0;
+		PostQuitMessage(index);
 		return 0;
 		break;
 	case WM_KEYDOWN:
-
 		break;
 	case WM_CHAR:
 		oss << name << ": " << static_cast<char>(wParam) << '\n';
