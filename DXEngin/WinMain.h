@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Windows.h"
+#include "Includes.h"
+#include "ExtendedException.h"
+#include "Window.h"
 
 #include <sstream>
 

@@ -1,18 +1,18 @@
 #pragma once
 
 #include "Includes.h"
+#include "ExtendedException.h"
 
 #include <sstream>
 #include<vector>
 
-
 class Window
 {
 public:
-	Window(int width, int height, const char* name) noexcept;
+	Window(int width, int height, const char* name);
 	~Window();
-	static bool AreActiveWindows();
-	static int DeconstructWindow(int index);
+	static bool AreActiveWindows() noexcept;
+	static int DeconstructWindow(int index) noexcept;
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
 private:

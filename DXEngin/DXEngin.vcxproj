@@ -19,10 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ExtendedException.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ExtendedException.h" />
     <ClInclude Include="Includes.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="WinMain.h" />

@@ -39,23 +39,24 @@ HINSTANCE Window::WindowTemplate::GetInstance() noexcept
 	return wndClass.hInst;
 }
 
-Window::Window(int width, int height, const char* name) noexcept
+Window::Window(int width, int height, const char* name) : width(width), height(height), name(name), index(Window::windows.size()), exitCode(-1)
 {
-	static std::vector<Window*> windows;
-	this->width = width;
-	this->height = height;
-	this->name = name;
-	exitCode = 0;
 	RECT wr;
 	wr.left = 100;
 	wr.right = width + wr.left;
 	wr.top = 100;
 	wr.bottom = height + wr.top;
-	AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE);
+	if (AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE) == 0)
+	{
+		throw EE_WINDOW_EXCEPTION_GLE();
+	}
 	hWnd = CreateWindow(WindowTemplate::GetName(), name, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top, nullptr, nullptr, WindowTemplate::GetInstance(), this);
+	if (hWnd == nullptr)
+	{
+		throw EE_WINDOW_EXCEPTION_GLE();
+	}
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
 	Window::windowCount++;
-	index = Window::windows.size();
 	Window::windows.push_back(this);
 }
 
@@ -64,12 +65,12 @@ Window::~Window()
 	DestroyWindow(hWnd);
 }
 
-bool Window::AreActiveWindows()
+bool Window::AreActiveWindows() noexcept
 {
 	return windowCount > 0;
 }
 
-int Window::DeconstructWindow(int index)
+int Window::DeconstructWindow(int index) noexcept
 {
 	int ret = Window::windows[index]->exitCode;
 	Window::windows[index]->~Window();
