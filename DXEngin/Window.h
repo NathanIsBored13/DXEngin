@@ -2,6 +2,7 @@
 
 #include "Includes.h"
 #include "ExtendedException.h"
+#include "Keyboard.h"
 #include "resource.h"
 
 #include <sstream>
@@ -17,15 +18,8 @@ public:
 	static int DeconstructWindow(int index) noexcept;
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
+	Keyboard kbd;
 private:
-	int width, height, index, exitCode;
-	const char* name;
-	static int windowCount;
-	static std::vector<Window*> windows;
-	HWND hWnd;
-	static LRESULT CALLBACK HandleMsgSetup(HWND, UINT, WPARAM, LPARAM) noexcept;
-	static LRESULT CALLBACK HandleMsgThunk(HWND, UINT, WPARAM, LPARAM) noexcept;
-	LRESULT HandleMsg(HWND, UINT, WPARAM, LPARAM) noexcept;
 	class WindowTemplate
 	{
 	public:
@@ -40,4 +34,12 @@ private:
 		static WindowTemplate wndClass;
 		HINSTANCE hInst;
 	};
+	int width, height, index, exitCode;
+	const char* name;
+	static int windowCount;
+	static std::vector<Window*> windows;
+	HWND hWnd;
+	static LRESULT CALLBACK HandleMsgSetup(HWND, UINT, WPARAM, LPARAM) noexcept;
+	static LRESULT CALLBACK HandleMsgThunk(HWND, UINT, WPARAM, LPARAM) noexcept;
+	LRESULT HandleMsg(HWND, UINT, WPARAM, LPARAM) noexcept;
 };

@@ -114,11 +114,22 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		PostQuitMessage(index);
 		ret = 0;
 		break;
+	case WM_KILLFOCUS:
+		kbd.ClearState();
+		break;
 	case WM_KEYDOWN:
+	case WM_SYSKEYDOWN:
+		if (!(lParam & 0x40000000) || kbd.AutorepeatIsEnabled())
+		{
+			kbd.OnKeyPressed(static_cast<unsigned char>(wParam));
+		}
+		break;
+	case WM_KEYUP:
+	case WM_SYSKEYUP:
+		kbd.OnKeyReleased(static_cast<unsigned char>(wParam));
 		break;
 	case WM_CHAR:
-		oss << name << ": " << static_cast<char>(wParam) << '\n';
-		OutputDebugString(oss.str().c_str());
+		kbd.OnChar(static_cast<unsigned char>(wParam));
 		break;
 	case WM_LBUTTONDOWN:
 		POINTS pt = MAKEPOINTS(lParam);
