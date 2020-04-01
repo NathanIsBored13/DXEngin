@@ -26,8 +26,15 @@
   <ItemGroup>
     <ClInclude Include="ExtendedException.h" />
     <ClInclude Include="Includes.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="WinMain.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="DXEngin.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\Downloads\Starvingartist-Antiseptic-Videogame-Microsoft-xbox.ico" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

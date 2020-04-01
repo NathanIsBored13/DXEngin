@@ -14,7 +14,6 @@ std::string ExtendedException::GenerateErrorString(int line, const char* file, c
 	return oss.str();
 }
 
-
 std::string ExtendedException::TranslateError(HRESULT hr)
 {
 	char* pMsgBuffer = nullptr;

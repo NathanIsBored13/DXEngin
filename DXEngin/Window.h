@@ -2,9 +2,11 @@
 
 #include "Includes.h"
 #include "ExtendedException.h"
+#include "resource.h"
 
 #include <sstream>
 #include<vector>
+#include<optional>
 
 class Window
 {

@@ -25,7 +25,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 			}
 			else
 			{
-				throw EE_MSG_LOOP_EXCEPTION_GLE();
+				throw EE_MSG_LOOP_EXCEPTION(GetLastError());
 			}
 		} while (Window::AreActiveWindows());
 		return 0;
@@ -34,7 +34,7 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 	{
 		MessageBox(nullptr, e.what(), "Extended exception", MB_OK | MB_ICONEXCLAMATION);
 	}
-	catch (std::exception & e)
+	catch (std::exception& e)
 	{
 		MessageBox(nullptr, e.what(), "Standerd exception", MB_OK | MB_ICONEXCLAMATION);
 	}

@@ -14,12 +14,12 @@ Window::WindowTemplate::WindowTemplate() noexcept : hInst(GetModuleHandle(nullpt
 		.cbClsExtra = 0,
 		.cbWndExtra = 0,
 		.hInstance = GetInstance(),
-		.hIcon = nullptr,
+		.hIcon = static_cast<HICON>(LoadImage(hInst, MAKEINTRESOURCE(IDI_ICON), IMAGE_ICON, 32, 32, 0)),
 		.hCursor = nullptr,
 		.hbrBackground = nullptr,
 		.lpszMenuName = nullptr,
 		.lpszClassName = GetName(),
-		.hIconSm = nullptr
+		.hIconSm = static_cast<HICON>(LoadImage(hInst, MAKEINTRESOURCE(IDI_ICON), IMAGE_ICON, 16, 16, 0))
 	};
 	RegisterClassEx(&wnd);
 }
@@ -48,12 +48,12 @@ Window::Window(int width, int height, const char* name) : width(width), height(h
 	wr.bottom = height + wr.top;
 	if (AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE) == 0)
 	{
-		throw EE_WINDOW_EXCEPTION_GLE();
+		throw EE_WINDOW_EXCEPTION(GetLastError());
 	}
 	hWnd = CreateWindow(WindowTemplate::GetName(), name, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, CW_USEDEFAULT, CW_USEDEFAULT, wr.right - wr.left, wr.bottom - wr.top, nullptr, nullptr, WindowTemplate::GetInstance(), this);
 	if (hWnd == nullptr)
 	{
-		throw EE_WINDOW_EXCEPTION_GLE();
+		throw EE_WINDOW_EXCEPTION(GetLastError());
 	}
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
 	Window::windowCount++;
@@ -80,15 +80,20 @@ int Window::DeconstructWindow(int index) noexcept
 
 LRESULT CALLBACK Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)  noexcept
 {
+	LRESULT ret;
 	if (msg == WM_NCCREATE)
 	{
 		const CREATESTRUCTW* const pCreate = reinterpret_cast<CREATESTRUCTW*>(lParam);
 		Window* const pWnd = static_cast<Window*>(pCreate->lpCreateParams);
 		SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pWnd));
 		SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&Window::HandleMsgThunk));
-		return pWnd->HandleMsg(hWnd, msg, wParam, lParam);
+		ret = pWnd->HandleMsg(hWnd, msg, wParam, lParam);
 	}
-	return DefWindowProc(hWnd, msg, wParam, lParam);
+	else
+	{
+		ret = DefWindowProc(hWnd, msg, wParam, lParam);
+	}
+	return ret;
 }
 
 LRESULT CALLBACK Window::HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)  noexcept
@@ -98,6 +103,7 @@ LRESULT CALLBACK Window::HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 
 LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
+	std::optional<LRESULT> ret = std::nullopt;
 	std::ostringstream oss;
 	switch (msg)
 	{
@@ -106,7 +112,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		OutputDebugString(oss.str().c_str());
 		exitCode = 0;
 		PostQuitMessage(index);
-		return 0;
+		ret = 0;
 		break;
 	case WM_KEYDOWN:
 		break;
@@ -120,5 +126,5 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		OutputDebugString(oss.str().c_str());
 		break;
 	}
-	return DefWindowProc(hWnd, msg, wParam, lParam);
+	return ret ? *ret : DefWindowProc(hWnd, msg, wParam, lParam);
 }
