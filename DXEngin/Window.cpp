@@ -1,8 +1,6 @@
 #include "Window.h"
 
 Window::WindowTemplate Window::WindowTemplate::wndClass;
-std::vector<Window*> Window::windows;
-int Window::windowCount;
 
 Window::WindowTemplate::WindowTemplate() noexcept : hInst(GetModuleHandle(nullptr))
 {
@@ -39,7 +37,7 @@ HINSTANCE Window::WindowTemplate::GetInstance() noexcept
 	return wndClass.hInst;
 }
 
-Window::Window(int width, int height, const char* name) : width(width), height(height), name(name), index(Window::windows.size()), exitCode(-1)
+Window::Window(int width, int height, const char* name) : width(width), height(height), name(name)
 {
 	RECT wr;
 	wr.left = 100;
@@ -56,8 +54,6 @@ Window::Window(int width, int height, const char* name) : width(width), height(h
 		throw EE_WINDOW_EXCEPTION(GetLastError());
 	}
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
-	Window::windowCount++;
-	Window::windows.push_back(this);
 }
 
 Window::~Window()
@@ -65,23 +61,15 @@ Window::~Window()
 	DestroyWindow(hWnd);
 }
 
-bool Window::AreActiveWindows() noexcept
-{
-	return windowCount > 0;
-}
-
-int Window::DeconstructWindow(int index) noexcept
-{
-	int ret = Window::windows[index]->exitCode;
-	Window::windows[index]->~Window();
-	Window::windowCount--;
-	return ret;
-}
-
 void Window::SetWindowTitle(const char* title) noexcept
 {
 	name = title;
 	SetWindowText(hWnd, title);
+}
+
+const char* Window::GetWindowTitle() noexcept
+{
+	return name;
 }
 
 LRESULT CALLBACK Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)  noexcept
@@ -102,6 +90,23 @@ LRESULT CALLBACK Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 	return ret;
 }
 
+std::optional<int> Window::ProcessMessages() noexcept
+{
+	std::optional<int> ret;
+	MSG msg;
+	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) && !ret)
+	{
+		if (msg.message == WM_QUIT)
+		{
+			return msg.wParam;
+		}
+
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+	return ret;
+}
+
 LRESULT CALLBACK Window::HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)  noexcept
 {
 	return reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA))->HandleMsg(hWnd, msg, wParam, lParam);
@@ -114,9 +119,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	{
 		case WM_CLOSE:
 		{
-			exitCode = 0;
-			PostQuitMessage(index);
-			ret = 0;
+			PostQuitMessage(0);
 			break;
 		}
 		case WM_KILLFOCUS:

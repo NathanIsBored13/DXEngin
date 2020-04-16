@@ -16,9 +16,9 @@ public:
 	~Window();
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
-	static bool AreActiveWindows() noexcept;
-	static int DeconstructWindow(int index) noexcept;
+	static std::optional<int> ProcessMessages() noexcept;
 	void SetWindowTitle(const char* title) noexcept;
+	const char* GetWindowTitle() noexcept;
 	Keyboard kbd;
 	Mouse mouse;
 private:
@@ -36,12 +36,11 @@ private:
 		static WindowTemplate wndClass;
 		HINSTANCE hInst;
 	};
-	int width, height, index, exitCode;
-	const char* name;
-	static int windowCount;
-	static std::vector<Window*> windows;
-	HWND hWnd;
 	static LRESULT CALLBACK HandleMsgSetup(HWND, UINT, WPARAM, LPARAM) noexcept;
 	static LRESULT CALLBACK HandleMsgThunk(HWND, UINT, WPARAM, LPARAM) noexcept;
 	LRESULT HandleMsg(HWND, UINT, WPARAM, LPARAM) noexcept;
+	static std::vector<Window*> wnds;
+	const char* name;
+	int width, height;
+	HWND hWnd;
 };
