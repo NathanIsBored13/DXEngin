@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="ExtendedException.cpp" />
     <ClCompile Include="Keyboard.cpp" />
+    <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
@@ -28,6 +29,7 @@
     <ClInclude Include="ExtendedException.h" />
     <ClInclude Include="Includes.h" />
     <ClInclude Include="Keyboard.h" />
+    <ClInclude Include="Mouse.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="WinMain.h" />
@@ -36,7 +38,7 @@
     <ResourceCompile Include="DXEngin.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\..\..\Downloads\Starvingartist-Antiseptic-Videogame-Microsoft-xbox.ico" />
+    <Image Include="icon.ico" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

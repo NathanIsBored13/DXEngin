@@ -3,9 +3,9 @@
 #include "Includes.h"
 #include "ExtendedException.h"
 #include "Keyboard.h"
+#include "Mouse.h"
 #include "resource.h"
 
-#include <sstream>
 #include<vector>
 #include<optional>
 
@@ -14,11 +14,13 @@ class Window
 public:
 	Window(int width, int height, const char* name);
 	~Window();
-	static bool AreActiveWindows() noexcept;
-	static int DeconstructWindow(int index) noexcept;
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
+	static bool AreActiveWindows() noexcept;
+	static int DeconstructWindow(int index) noexcept;
+	void SetWindowTitle(const char* title) noexcept;
 	Keyboard kbd;
+	Mouse mouse;
 private:
 	class WindowTemplate
 	{

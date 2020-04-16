@@ -62,7 +62,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON                ICON                    "C:\\Users\\Nathan\\Downloads\\Starvingartist-Antiseptic-Videogame-Microsoft-xbox.ico"
+IDI_ICON                ICON                    "C:\\Users\\Nathan\\source\\repos\\DXEngin\\\DXEngin\\icon.ico"
 
 #endif    // English (United Kingdom) resources
 /////////////////////////////////////////////////////////////////////////////

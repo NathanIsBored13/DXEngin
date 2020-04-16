@@ -69,7 +69,7 @@ bool Keyboard::CharIsEmpty() const noexcept
 
 void Keyboard::FlushKey() noexcept
 {
-	keybuffer = std::queue<Event>();
+	keybuffer = std::queue<Keyboard::Event>();
 }
 
 void Keyboard::FlushChar() noexcept
