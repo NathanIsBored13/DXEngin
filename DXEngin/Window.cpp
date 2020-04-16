@@ -1,5 +1,6 @@
 #include "Window.h"
 
+int Window::wndCount = 0;
 Window::WindowTemplate Window::WindowTemplate::wndClass;
 
 Window::WindowTemplate::WindowTemplate() noexcept : hInst(GetModuleHandle(nullptr))
@@ -39,6 +40,7 @@ HINSTANCE Window::WindowTemplate::GetInstance() noexcept
 
 Window::Window(int width, int height, const char* name) : width(width), height(height), name(name)
 {
+	wndCount++;
 	RECT wr;
 	wr.left = 100;
 	wr.right = width + wr.left;
@@ -59,6 +61,11 @@ Window::Window(int width, int height, const char* name) : width(width), height(h
 Window::~Window()
 {
 	DestroyWindow(hWnd);
+}
+
+bool Window::IsActiveWindow() noexcept
+{
+	return wndCount > 0;
 }
 
 void Window::SetWindowTitle(const char* title) noexcept
@@ -119,6 +126,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	{
 		case WM_CLOSE:
 		{
+			wndCount--;
 			PostQuitMessage(0);
 			break;
 		}
@@ -155,8 +163,8 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 				mouse.OnMouseMove(pt.x, pt.y);
 				if (!mouse.IsInWindow())
 				{
-					SetCapture(hWnd);
 					mouse.OnMouseEnter();
+					SetCapture(hWnd);
 				}
 			}
 			else
@@ -167,8 +175,8 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 				}
 				else
 				{
-					ReleaseCapture();
 					mouse.OnMouseLeave();
+					ReleaseCapture();
 				}
 			}
 			break;

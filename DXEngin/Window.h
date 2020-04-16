@@ -16,6 +16,7 @@ public:
 	~Window();
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
+	static bool IsActiveWindow() noexcept;
 	static std::optional<int> ProcessMessages() noexcept;
 	void SetWindowTitle(const char* title) noexcept;
 	const char* GetWindowTitle() noexcept;
@@ -39,7 +40,7 @@ private:
 	static LRESULT CALLBACK HandleMsgSetup(HWND, UINT, WPARAM, LPARAM) noexcept;
 	static LRESULT CALLBACK HandleMsgThunk(HWND, UINT, WPARAM, LPARAM) noexcept;
 	LRESULT HandleMsg(HWND, UINT, WPARAM, LPARAM) noexcept;
-	static std::vector<Window*> wnds;
+	static int wndCount;
 	const char* name;
 	int width, height;
 	HWND hWnd;

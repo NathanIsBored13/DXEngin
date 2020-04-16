@@ -4,7 +4,8 @@ int CALLBACK WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 {
 	try
 	{
-		return App{}.Begin();
+		App app(60);
+		return app.Begin();
 	}
 	catch (const ExtendedException& e)
 	{

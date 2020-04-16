@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Window.h"
+#include "Timer.h"
 
 #include <ostream>
 #include <vector>
@@ -8,9 +9,10 @@
 class App
 {
 public:
-	App();
+	App(float targetFPS);
 	int Begin();
 private:
-	void DoFrame();
-	Window wnd;
+	void RunFrame(float elapsedTime);
+	std::vector<Window*> wnds;
+	float targetFPS;
 };
