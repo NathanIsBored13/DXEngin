@@ -51,6 +51,7 @@ public:
 	int GetPosY() const noexcept;
 	bool IsInWindow() const noexcept;
 	bool LeftIsPressed() const noexcept;
+	bool MiddleIsPressed() const noexcept;
 	bool RightIsPressed() const noexcept;
 	Mouse::Event Read() noexcept;
 	bool IsEmpty() const noexcept

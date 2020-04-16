@@ -66,6 +66,11 @@ bool Mouse::LeftIsPressed() const noexcept
 	return leftIsPressed;
 }
 
+bool Mouse::MiddleIsPressed() const noexcept
+{
+	return middleIsPressed;
+}
+
 bool Mouse::RightIsPressed() const noexcept
 {
 	return rightIsPressed;
