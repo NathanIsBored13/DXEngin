@@ -12,10 +12,10 @@
 class ExtendedException : public std::exception
 {
 public:
-	ExtendedException(int line, const char* file, const char* type, HRESULT hr);
+	ExtendedException(int, const char*, const char*, HRESULT);
 	const char* what() const noexcept;
-	static std::string TranslateError(HRESULT hr);
+	static std::string TranslateError(HRESULT);
 private:
-	std::string GenerateErrorString(int line, const char* file, const char* type, HRESULT hr);
+	std::string GenerateErrorString(int, const char*, const char*, HRESULT);
 	std::string errorStr;
 };

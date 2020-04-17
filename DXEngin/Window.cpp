@@ -1,6 +1,7 @@
 #include "Window.h"
 
 int Window::wndCount = 0;
+std::vector<Window::WindowStatus> Window::statuses;
 Window::WindowTemplate Window::WindowTemplate::wndClass;
 
 Window::WindowTemplate::WindowTemplate() noexcept : hInst(GetModuleHandle(nullptr))
@@ -38,8 +39,9 @@ HINSTANCE Window::WindowTemplate::GetInstance() noexcept
 	return wndClass.hInst;
 }
 
-Window::Window(int width, int height, const char* name) : width(width), height(height), name(name)
+Window::Window(int width, int height, const char* name) : width(width), height(height), name(name), index(statuses.size())
 {
+	statuses.push_back( {true, -1} );
 	wndCount++;
 	RECT wr;
 	wr.left = 100;
@@ -56,16 +58,50 @@ Window::Window(int width, int height, const char* name) : width(width), height(h
 		throw EE_WINDOW_EXCEPTION(GetLastError());
 	}
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
+	gfx = std::make_unique<Graphics>(hWnd);
 }
 
 Window::~Window()
 {
-	DestroyWindow(hWnd);
+	if (hWnd != nullptr)
+	{
+		DestroyWindow(hWnd);
+		hWnd = nullptr;
+	}
 }
 
 bool Window::IsActiveWindow() noexcept
 {
 	return wndCount > 0;
+}
+
+std::optional<int> Window::ProcessMessages() noexcept
+{
+	std::optional<int> ret;
+	MSG msg;
+	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) && !ret)
+	{
+		if (msg.message == WM_QUIT)
+		{
+			return msg.wParam;
+		}
+
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+	return ret;
+}
+
+int Window::OnWindowQuit(int index) noexcept
+{
+	wndCount--;
+	statuses[index].active = false;
+	return statuses[index].exitCode;
+}
+
+bool Window::IsWindowActive() noexcept
+{
+	return statuses[index].active;
 }
 
 void Window::SetWindowTitle(const char* title) noexcept
@@ -77,6 +113,16 @@ void Window::SetWindowTitle(const char* title) noexcept
 const char* Window::GetWindowTitle() noexcept
 {
 	return name;
+}
+
+int Window::GetExitCode() noexcept
+{
+	return statuses[index].exitCode;
+}
+
+Graphics& Window::GetGFX()
+{
+	return *gfx;
 }
 
 LRESULT CALLBACK Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)  noexcept
@@ -97,23 +143,6 @@ LRESULT CALLBACK Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 	return ret;
 }
 
-std::optional<int> Window::ProcessMessages() noexcept
-{
-	std::optional<int> ret;
-	MSG msg;
-	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) && !ret)
-	{
-		if (msg.message == WM_QUIT)
-		{
-			return msg.wParam;
-		}
-
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
-	return ret;
-}
-
 LRESULT CALLBACK Window::HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)  noexcept
 {
 	return reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA))->HandleMsg(hWnd, msg, wParam, lParam);
@@ -121,14 +150,12 @@ LRESULT CALLBACK Window::HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPAR
 
 LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
-	std::optional<LRESULT> ret;
 	switch (msg)
 	{
 		case WM_CLOSE:
 		{
-			wndCount--;
-			PostQuitMessage(0);
-			break;
+			PostQuit(0);
+			return 0;
 		}
 		case WM_KILLFOCUS:
 		{
@@ -248,5 +275,13 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 			break;
 		}
 	}
-	return ret ? *ret : DefWindowProc(hWnd, msg, wParam, lParam);
+	return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+
+void Window::PostQuit(int exitCode) noexcept
+{
+	statuses[index].exitCode = exitCode;
+	DestroyWindow(hWnd);
+	hWnd = nullptr;
+	PostQuitMessage(index);
 }

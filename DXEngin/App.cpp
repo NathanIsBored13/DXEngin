@@ -1,15 +1,14 @@
 #include "App.h"
 
-App::App(float targetFPS) : targetFPS(targetFPS) 
+App::App(float targetFPS) : targetFPS(targetFPS)
 {
-	wnds.push_back(new Window(400, 400, "1"));
-	wnds.push_back(new Window(400, 400, "2"));
-	wnds.push_back(new Window(400, 400, "3"));
+	wnds.push_back(new DXWindow(400, 400, "MainWindow"));
+	wnds.push_back(new DXWindow(200, 200, "1"));
+	wnds.push_back(new DXWindow(200, 200, "2"));
 }
 
 int App::Begin()
 {
-
 	Timer clock;
 	std::optional<int> ret;
 	float elapsedTime;
@@ -18,19 +17,14 @@ int App::Begin()
 		if (std::optional<int> ret = Window::ProcessMessages())
 		{
 			std::ostringstream oss;
-			oss << "window exeted with code " << *ret << '\n';
+			oss << "window exeted with code " << Window::OnWindowQuit(*ret) << '\n';
 			OutputDebugString(oss.str().c_str());
 		}
 		else if ((elapsedTime = clock.Peek()) > 1 / targetFPS)
 		{
+			for(DXWindow* wnd : wnds) wnd->DoFrame(elapsedTime);
 			clock.Set();
-			RunFrame(elapsedTime);
 		}
 	}
-	return *ret;
-}
-
-void App::RunFrame(float elapsedTime)
-{
-	for(Window* wnd : wnds) wnd->SetWindowTitle(std::to_string(1 / elapsedTime).append(" FPS").c_str());
+	return 0;
 }

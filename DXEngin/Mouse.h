@@ -34,7 +34,7 @@ public:
 		int y;
 	public:
 		Event() noexcept;
-		Event(Type type, const Mouse& parent) noexcept;
+		Event(Type, const Mouse&) noexcept;
 		bool IsValid() const noexcept;
 		Type GetType() const noexcept;
 		std::pair<int, int> GetPos() const noexcept;
@@ -60,18 +60,18 @@ public:
 	}
 	void Flush() noexcept;
 private:
-	void OnMouseMove(int x, int y) noexcept;
+	void OnMouseMove(int, int) noexcept;
 	void OnMouseLeave() noexcept;
 	void OnMouseEnter() noexcept;
-	void OnLeftPressed(int x, int y) noexcept;
-	void OnLeftReleased(int x, int y) noexcept;
-	void OnMiddlePressed(int x, int y) noexcept;
-	void OnMiddleReleased(int x, int y) noexcept;
-	void OnRightPressed(int x, int y) noexcept;
-	void OnRightReleased(int x, int y) noexcept;
-	void OnWheelUp(int x, int y) noexcept;
-	void OnWheelDown(int x, int y) noexcept;
-	void OnWheelDelta(int x, int y, int delta) noexcept;
+	void OnLeftPressed(int, int) noexcept;
+	void OnLeftReleased(int, int) noexcept;
+	void OnMiddlePressed(int, int) noexcept;
+	void OnMiddleReleased(int, int) noexcept;
+	void OnRightPressed(int, int) noexcept;
+	void OnRightReleased(int, int) noexcept;
+	void OnWheelUp(int, int) noexcept;
+	void OnWheelDown(int, int) noexcept;
+	void OnWheelDelta(int, int, int) noexcept;
 	void TrimBuffer() noexcept;
 	static constexpr unsigned int bufferSize = 16u;
 	int x = 0;
