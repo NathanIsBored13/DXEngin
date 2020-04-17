@@ -12,7 +12,7 @@ public:
 	App(float targetFPS);
 	int Begin();
 private:
-	void RunFrame(float elapsedTime);
+	void RunFrames(float elapsedTime);
 	std::vector<Window*> wnds;
 	float targetFPS;
 };

@@ -23,14 +23,20 @@ int App::Begin()
 		}
 		else if ((elapsedTime = clock.Peek()) > 1 / targetFPS)
 		{
+			RunFrames(elapsedTime);
 			clock.Set();
-			RunFrame(elapsedTime);
 		}
 	}
 	return *ret;
 }
 
-void App::RunFrame(float elapsedTime)
+void App::RunFrames(float elapsedTime)
 {
-	for(Window* wnd : wnds) wnd->SetWindowTitle(std::to_string(1 / elapsedTime).append(" FPS").c_str());
+	static Timer timer;
+	for (Window* wnd : wnds)
+	{
+		wnd->SetWindowTitle(std::to_string(1 / elapsedTime).append(" FPS").c_str());
+		wnd->GetGFX().ClearBuffer(sin(timer.Peek()), sin(timer.Peek()), 1);
+		wnd->GetGFX().EndFrame();
+	}
 }

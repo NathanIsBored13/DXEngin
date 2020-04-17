@@ -56,6 +56,7 @@ Window::Window(int width, int height, const char* name) : width(width), height(h
 		throw EE_WINDOW_EXCEPTION(GetLastError());
 	}
 	ShowWindow(hWnd, SW_SHOWDEFAULT);
+	gfx = std::make_unique<Graphics>(hWnd);
 }
 
 Window::~Window()
@@ -63,9 +64,9 @@ Window::~Window()
 	DestroyWindow(hWnd);
 }
 
-bool Window::IsActiveWindow() noexcept
+Graphics& Window::GetGFX()
 {
-	return wndCount > 0;
+	return *gfx;
 }
 
 void Window::SetWindowTitle(const char* title) noexcept
@@ -79,6 +80,10 @@ const char* Window::GetWindowTitle() noexcept
 	return name;
 }
 
+bool Window::IsActiveWindow() noexcept
+{
+	return wndCount > 0;
+}
 LRESULT CALLBACK Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)  noexcept
 {
 	LRESULT ret;

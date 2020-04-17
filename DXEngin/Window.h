@@ -4,10 +4,11 @@
 #include "ExtendedException.h"
 #include "Keyboard.h"
 #include "Mouse.h"
+#include "Graphics.h"
 #include "resource.h"
 
-#include<vector>
-#include<optional>
+#include <memory>
+#include <optional>
 
 class Window
 {
@@ -16,10 +17,11 @@ public:
 	~Window();
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
-	static bool IsActiveWindow() noexcept;
-	static std::optional<int> ProcessMessages() noexcept;
+	Graphics& GetGFX();
 	void SetWindowTitle(const char* title) noexcept;
 	const char* GetWindowTitle() noexcept;
+	static bool IsActiveWindow() noexcept;
+	static std::optional<int> ProcessMessages() noexcept;
 	Keyboard kbd;
 	Mouse mouse;
 private:
@@ -37,11 +39,12 @@ private:
 		static WindowTemplate wndClass;
 		HINSTANCE hInst;
 	};
+	LRESULT HandleMsg(HWND, UINT, WPARAM, LPARAM) noexcept;
 	static LRESULT CALLBACK HandleMsgSetup(HWND, UINT, WPARAM, LPARAM) noexcept;
 	static LRESULT CALLBACK HandleMsgThunk(HWND, UINT, WPARAM, LPARAM) noexcept;
-	LRESULT HandleMsg(HWND, UINT, WPARAM, LPARAM) noexcept;
+	HWND hWnd;
+	std::unique_ptr<Graphics> gfx;
 	static int wndCount;
 	const char* name;
 	int width, height;
-	HWND hWnd;
 };
