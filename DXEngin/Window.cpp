@@ -84,7 +84,7 @@ bool Window::IsWindowActive(Window* pWnd) noexcept
 	return ret;
 }
 
-void Window::TrimWindows(std::vector<Window*>* wnds)
+void Window::TrimWindows(std::vector<Window*>* wnds) noexcept
 {
 	wnds->erase(std::remove_if(wnds->begin(), wnds->end(), [](Window* wnd) { return !IsWindowActive(wnd); }), wnds->end());
 }
@@ -99,7 +99,6 @@ std::optional<int> Window::ProcessMessages() noexcept
 		{
 			return OnWindowQuit(msg.wParam);
 		}
-
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}

@@ -26,7 +26,7 @@ public:
 	virtual void DoFrame(float) = 0;
 	static bool IsActiveWindow() noexcept;
 	static bool IsWindowActive(Window*) noexcept;
-	static void TrimWindows(std::vector<Window*>*);
+	static void TrimWindows(std::vector<Window*>*) noexcept;
 	static std::optional<int> ProcessMessages() noexcept;
 	static int OnWindowQuit(int) noexcept;
 	void PostQuit(int) noexcept;
