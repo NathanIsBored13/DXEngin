@@ -17,13 +17,17 @@ int App::Begin()
 		if (std::optional<int> ret = Window::ProcessMessages())
 		{
 			std::ostringstream oss;
-			oss << "window exeted with code " << Window::OnWindowQuit(*ret) << '\n';
+			oss << "window exeted with code " << *ret << '\n';
 			OutputDebugString(oss.str().c_str());
+			Window::TrimWindows(&wnds);
 		}
 		else if ((elapsedTime = clock.Peek()) > 1 / targetFPS)
 		{
-			for(DXWindow* wnd : wnds) wnd->DoFrame(elapsedTime);
 			clock.Set();
+			for (Window* wnd : wnds)
+			{
+				wnd->DoFrame(elapsedTime);
+			}
 		}
 	}
 	return 0;

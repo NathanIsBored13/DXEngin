@@ -41,7 +41,7 @@ HINSTANCE Window::WindowTemplate::GetInstance() noexcept
 
 Window::Window(int width, int height, const char* name) : width(width), height(height), name(name), index(statuses.size())
 {
-	statuses.push_back( {true, -1} );
+	statuses.push_back( {this, true, -1} );
 	wndCount++;
 	RECT wr;
 	wr.left = 100;
@@ -63,16 +63,30 @@ Window::Window(int width, int height, const char* name) : width(width), height(h
 
 Window::~Window()
 {
-	if (hWnd != nullptr)
-	{
-		DestroyWindow(hWnd);
-		hWnd = nullptr;
-	}
+	DestroyWindow(hWnd);
 }
 
 bool Window::IsActiveWindow() noexcept
 {
 	return wndCount > 0;
+}
+
+bool Window::IsWindowActive(Window* pWnd) noexcept
+{
+	bool ret = false;
+	for (WindowStatus wnd : statuses)
+	{
+		if (wnd.wnd == pWnd)
+		{
+			ret = wnd.active;
+		}
+	}
+	return ret;
+}
+
+void Window::TrimWindows(std::vector<Window*>* wnds)
+{
+	wnds->erase(std::remove_if(wnds->begin(), wnds->end(), [](Window* wnd) { return !IsWindowActive(wnd); }), wnds->end());
 }
 
 std::optional<int> Window::ProcessMessages() noexcept
@@ -83,7 +97,7 @@ std::optional<int> Window::ProcessMessages() noexcept
 	{
 		if (msg.message == WM_QUIT)
 		{
-			return msg.wParam;
+			return OnWindowQuit(msg.wParam);
 		}
 
 		TranslateMessage(&msg);
@@ -96,12 +110,14 @@ int Window::OnWindowQuit(int index) noexcept
 {
 	wndCount--;
 	statuses[index].active = false;
+	statuses[index].wnd->~Window();
 	return statuses[index].exitCode;
 }
 
-bool Window::IsWindowActive() noexcept
+void Window::PostQuit(int exitCode) noexcept
 {
-	return statuses[index].active;
+	statuses[index].exitCode = exitCode;
+	PostQuitMessage(index);
 }
 
 void Window::SetWindowTitle(const char* title) noexcept
@@ -276,12 +292,4 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		}
 	}
 	return DefWindowProc(hWnd, msg, wParam, lParam);
-}
-
-void Window::PostQuit(int exitCode) noexcept
-{
-	statuses[index].exitCode = exitCode;
-	DestroyWindow(hWnd);
-	hWnd = nullptr;
-	PostQuitMessage(index);
 }

@@ -15,6 +15,7 @@ class Window
 public:
 	struct WindowStatus
 	{
+		Window* wnd;
 		bool active;
 		int exitCode;
 	};
@@ -22,11 +23,13 @@ public:
 	~Window();
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
+	virtual void DoFrame(float) = 0;
 	static bool IsActiveWindow() noexcept;
+	static bool IsWindowActive(Window*) noexcept;
+	static void TrimWindows(std::vector<Window*>*);
 	static std::optional<int> ProcessMessages() noexcept;
 	static int OnWindowQuit(int) noexcept;
-	virtual void DoFrame(float) = 0;
-	bool IsWindowActive() noexcept;
+	void PostQuit(int) noexcept;
 	void SetWindowTitle(const char*) noexcept;
 	const char* GetWindowTitle() noexcept;
 	int GetExitCode() noexcept;
@@ -51,7 +54,6 @@ private:
 	static LRESULT CALLBACK HandleMsgSetup(HWND, UINT, WPARAM, LPARAM) noexcept;
 	static LRESULT CALLBACK HandleMsgThunk(HWND, UINT, WPARAM, LPARAM) noexcept;
 	LRESULT HandleMsg(HWND, UINT, WPARAM, LPARAM) noexcept;
-	void PostQuit(int) noexcept;
 	static std::vector<WindowStatus> statuses;
 	static int wndCount;
 	HWND hWnd;

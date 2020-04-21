@@ -12,6 +12,6 @@ public:
 	App(float);
 	int Begin();
 private:
-	std::vector<DXWindow*> wnds;
+	std::vector<Window*> wnds;
 	float targetFPS;
 };
