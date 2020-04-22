@@ -2,15 +2,16 @@
 
 App::App(float targetFPS) : targetFPS(targetFPS)
 {
-	wnds.push_back(new DXWindow(400, 400, "MainWindow"));
-	wnds.push_back(new DXWindow(200, 200, "1"));
-	wnds.push_back(new DXWindow(200, 200, "2"));
 }
 
 int App::Begin()
 {
+	new DXWindow(400, 400, "MainWindow");
+	new R(200, 200, "1");
+	new G(200, 200, "2");
+	new B(200, 200, "3");
+
 	Timer clock;
-	std::optional<int> ret;
 	float elapsedTime;
 	while (Window::IsActiveWindow())
 	{
@@ -19,15 +20,11 @@ int App::Begin()
 			std::ostringstream oss;
 			oss << "window exeted with code " << *ret << '\n';
 			OutputDebugString(oss.str().c_str());
-			Window::TrimWindows(&wnds);
 		}
 		else if ((elapsedTime = clock.Peek()) > 1 / targetFPS)
 		{
 			clock.Set();
-			for (Window* wnd : wnds)
-			{
-				wnd->DoFrame(elapsedTime);
-			}
+			Window::DoFrames(elapsedTime);
 		}
 	}
 	return 0;

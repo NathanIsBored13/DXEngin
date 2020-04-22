@@ -1,25 +1,25 @@
 #include "Window.h"
 
-int Window::wndCount = 0;
 std::vector<Window::WindowStatus> Window::statuses;
+std::vector<std::pair<int, Window*>> Window::activeWnds;
 Window::WindowTemplate Window::WindowTemplate::wndClass;
 
 Window::WindowTemplate::WindowTemplate() noexcept : hInst(GetModuleHandle(nullptr))
 {
 	WNDCLASSEX wnd =
 	{
-		.cbSize = sizeof(wnd),
-		.style = CS_OWNDC,
-		.lpfnWndProc = HandleMsgSetup,
-		.cbClsExtra = 0,
-		.cbWndExtra = 0,
-		.hInstance = GetInstance(),
-		.hIcon = static_cast<HICON>(LoadImage(hInst, MAKEINTRESOURCE(IDI_ICON), IMAGE_ICON, 32, 32, 0)),
-		.hCursor = nullptr,
-		.hbrBackground = nullptr,
-		.lpszMenuName = nullptr,
-		.lpszClassName = GetName(),
-		.hIconSm = static_cast<HICON>(LoadImage(hInst, MAKEINTRESOURCE(IDI_ICON), IMAGE_ICON, 16, 16, 0))
+		sizeof(wnd),
+		CS_OWNDC,
+		HandleMsgSetup,
+		0,
+		0,
+		GetInstance(),
+		static_cast<HICON>(LoadImage(hInst, MAKEINTRESOURCE(IDI_ICON), IMAGE_ICON, 32, 32, 0)),
+		nullptr,
+		nullptr,
+		nullptr,
+		GetName(),
+		static_cast<HICON>(LoadImage(hInst, MAKEINTRESOURCE(IDI_ICON), IMAGE_ICON, 16, 16, 0))
 	};
 	RegisterClassEx(&wnd);
 }
@@ -39,15 +39,17 @@ HINSTANCE Window::WindowTemplate::GetInstance() noexcept
 	return wndClass.hInst;
 }
 
-Window::Window(int width, int height, const char* name) : width(width), height(height), name(name), index(statuses.size())
+Window::Window(int width, int height, const char* name, Window* parent) : width(width), height(height), name(name), index(statuses.size())
 {
-	statuses.push_back( {this, true, -1} );
-	wndCount++;
-	RECT wr;
-	wr.left = 100;
-	wr.right = width + wr.left;
-	wr.top = 100;
-	wr.bottom = height + wr.top;
+	statuses.push_back( {this, parent, true, false, -1} );
+	activeWnds.push_back({ index, this });
+	RECT wr
+	{
+		100,
+		100,
+		width + 100,
+		height + 100
+	};
 	if (AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE) == 0)
 	{
 		throw EE_WINDOW_EXCEPTION(GetLastError());
@@ -66,9 +68,20 @@ Window::~Window()
 	DestroyWindow(hWnd);
 }
 
+void Window::DoFrames(float elapsed) noexcept
+{
+	for (std::pair<int, Window*> wnd : activeWnds)
+	{
+		if (!statuses[wnd.first].paused)
+		{
+			wnd.second->DoFrame(elapsed);
+		}
+	}
+}
+
 bool Window::IsActiveWindow() noexcept
 {
-	return wndCount > 0;
+	return activeWnds.size() > 0;
 }
 
 bool Window::IsWindowActive(Window* pWnd) noexcept
@@ -78,7 +91,7 @@ bool Window::IsWindowActive(Window* pWnd) noexcept
 	{
 		if (wnd.wnd == pWnd)
 		{
-			ret = wnd.active;
+			ret = wnd.open;
 		}
 	}
 	return ret;
@@ -97,20 +110,18 @@ std::optional<int> Window::ProcessMessages() noexcept
 	{
 		if (msg.message == WM_QUIT)
 		{
-			return OnWindowQuit(msg.wParam);
+			statuses[msg.wParam].open = false;
+			statuses[msg.wParam].wnd->~Window();
+			ret = statuses[msg.wParam].exitCode;
+			activeWnds.erase(std::remove_if(activeWnds.begin(), activeWnds.end(), [](std::pair<int, Window*> wnd) { return !statuses[wnd.first].open; }), activeWnds.end());
 		}
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
+		else
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
 	}
 	return ret;
-}
-
-int Window::OnWindowQuit(int index) noexcept
-{
-	wndCount--;
-	statuses[index].active = false;
-	statuses[index].wnd->~Window();
-	return statuses[index].exitCode;
 }
 
 void Window::PostQuit(int exitCode) noexcept

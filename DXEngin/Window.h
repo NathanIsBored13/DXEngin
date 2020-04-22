@@ -16,19 +16,21 @@ public:
 	struct WindowStatus
 	{
 		Window* wnd;
-		bool active;
+		Window* parent;
+		bool open;
+		bool paused;
 		int exitCode;
 	};
-	Window(int, int, const char*);
+	Window(int, int, const char*, Window*);
 	~Window();
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
 	virtual void DoFrame(float) = 0;
+	static void DoFrames(float) noexcept;
 	static bool IsActiveWindow() noexcept;
 	static bool IsWindowActive(Window*) noexcept;
 	static void TrimWindows(std::vector<Window*>*) noexcept;
 	static std::optional<int> ProcessMessages() noexcept;
-	static int OnWindowQuit(int) noexcept;
 	void PostQuit(int) noexcept;
 	void SetWindowTitle(const char*) noexcept;
 	const char* GetWindowTitle() noexcept;
@@ -55,7 +57,7 @@ private:
 	static LRESULT CALLBACK HandleMsgThunk(HWND, UINT, WPARAM, LPARAM) noexcept;
 	LRESULT HandleMsg(HWND, UINT, WPARAM, LPARAM) noexcept;
 	static std::vector<WindowStatus> statuses;
-	static int wndCount;
+	static std::vector<std::pair<int, Window*>> activeWnds;
 	HWND hWnd;
 	std::unique_ptr<Graphics> gfx;
 	const char* name;

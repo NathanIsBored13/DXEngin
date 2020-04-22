@@ -1,6 +1,9 @@
 #pragma once
 
 #include "DXWindow.h"
+#include "R.h"
+#include "G.h"
+#include "B.h"
 #include "Timer.h"
 
 #include <ostream>
