@@ -2,7 +2,11 @@
 
 #include "Includes.h"
 #include "ExtendedException.h"
-#include "App.h"
+#include "Window.h"
+#include "DXWindow.h"
+#include "R.h"
+#include "G.h"
+#include "B.h"
 
 #include <sstream>
 

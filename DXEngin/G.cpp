@@ -1,6 +1,6 @@
 #include "G.h"
 
-G::G(int width, int height, const char* name) : Window(width, height, name, nullptr) {}
+G::G(int width, int height, const char* name, Window* parent) : Window(width, height, name, parent) {}
 
 G::~G() {}
 

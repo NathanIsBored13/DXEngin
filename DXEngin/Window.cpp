@@ -1,7 +1,5 @@
 #include "Window.h"
 
-std::vector<Window::WindowStatus> Window::statuses;
-std::vector<std::pair<int, Window*>> Window::activeWnds;
 Window::WindowTemplate Window::WindowTemplate::wndClass;
 
 Window::WindowTemplate::WindowTemplate() noexcept : hInst(GetModuleHandle(nullptr))
@@ -39,10 +37,12 @@ HINSTANCE Window::WindowTemplate::GetInstance() noexcept
 	return wndClass.hInst;
 }
 
-Window::Window(int width, int height, const char* name, Window* parent) : width(width), height(height), name(name), index(statuses.size())
+Window::Window(int width, int height, const char* name, Window* parent) : width(width), height(height), name(name), parent(parent)
 {
-	statuses.push_back( {this, parent, true, false, -1} );
-	activeWnds.push_back({ index, this });
+	if (parent != nullptr)
+	{
+		parent->AddChild(this);
+	}
 	RECT wr
 	{
 		100,
@@ -63,71 +63,36 @@ Window::Window(int width, int height, const char* name, Window* parent) : width(
 	gfx = std::make_unique<Graphics>(hWnd);
 }
 
-Window::~Window()
+Window::~Window() {}
+
+void Window::AddChild(Window* child) noexcept
 {
-	DestroyWindow(hWnd);
+	children.push_back(child);
 }
 
-void Window::DoFrames(float elapsed) noexcept
+void Window::RemoveChild(Window* child) noexcept
 {
-	for (std::pair<int, Window*> wnd : activeWnds)
+	for (size_t i = 0; i < children.size(); i++)
 	{
-		if (!statuses[wnd.first].paused)
+		if (children[i] == child)
 		{
-			wnd.second->DoFrame(elapsed);
+			children.erase(children.begin() + i);
 		}
 	}
-}
-
-bool Window::IsActiveWindow() noexcept
-{
-	return activeWnds.size() > 0;
-}
-
-bool Window::IsWindowActive(Window* pWnd) noexcept
-{
-	bool ret = false;
-	for (WindowStatus wnd : statuses)
-	{
-		if (wnd.wnd == pWnd)
-		{
-			ret = wnd.open;
-		}
-	}
-	return ret;
-}
-
-void Window::TrimWindows(std::vector<Window*>* wnds) noexcept
-{
-	wnds->erase(std::remove_if(wnds->begin(), wnds->end(), [](Window* wnd) { return !IsWindowActive(wnd); }), wnds->end());
-}
-
-std::optional<int> Window::ProcessMessages() noexcept
-{
-	std::optional<int> ret;
-	MSG msg;
-	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) && !ret)
-	{
-		if (msg.message == WM_QUIT)
-		{
-			statuses[msg.wParam].open = false;
-			statuses[msg.wParam].wnd->~Window();
-			ret = statuses[msg.wParam].exitCode;
-			activeWnds.erase(std::remove_if(activeWnds.begin(), activeWnds.end(), [](std::pair<int, Window*> wnd) { return !statuses[wnd.first].open; }), activeWnds.end());
-		}
-		else
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-	}
-	return ret;
 }
 
 void Window::PostQuit(int exitCode) noexcept
 {
-	statuses[index].exitCode = exitCode;
-	PostQuitMessage(index);
+	for (Window* child : children)
+	{
+		child->PostQuit(1);
+	}
+	if (parent != nullptr && exitCode != 1)
+	{
+		parent->RemoveChild(this);
+	}
+	DestroyWindow(hWnd);
+	PostMessage(nullptr, WM_QUIT, exitCode, reinterpret_cast<LONG_PTR>(this));
 }
 
 void Window::SetWindowTitle(const char* title) noexcept
@@ -139,11 +104,6 @@ void Window::SetWindowTitle(const char* title) noexcept
 const char* Window::GetWindowTitle() noexcept
 {
 	return name;
-}
-
-int Window::GetExitCode() noexcept
-{
-	return statuses[index].exitCode;
 }
 
 Graphics& Window::GetGFX()

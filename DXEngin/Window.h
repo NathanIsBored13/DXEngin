@@ -2,6 +2,7 @@
 
 #include "Includes.h"
 #include "ExtendedException.h"
+#include "WindowTable.h"
 #include "Keyboard.h"
 #include "Mouse.h"
 #include "Graphics.h"
@@ -16,9 +17,6 @@ public:
 	struct WindowStatus
 	{
 		Window* wnd;
-		Window* parent;
-		bool open;
-		bool paused;
 		int exitCode;
 	};
 	Window(int, int, const char*, Window*);
@@ -26,15 +24,11 @@ public:
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
 	virtual void DoFrame(float) = 0;
-	static void DoFrames(float) noexcept;
-	static bool IsActiveWindow() noexcept;
-	static bool IsWindowActive(Window*) noexcept;
-	static void TrimWindows(std::vector<Window*>*) noexcept;
-	static std::optional<int> ProcessMessages() noexcept;
+	void AddChild(Window*) noexcept;
+	void RemoveChild(Window*) noexcept;
 	void PostQuit(int) noexcept;
 	void SetWindowTitle(const char*) noexcept;
 	const char* GetWindowTitle() noexcept;
-	int GetExitCode() noexcept;
 	Graphics& GetGFX();
 	Keyboard kbd;
 	Mouse mouse;
@@ -56,10 +50,10 @@ private:
 	static LRESULT CALLBACK HandleMsgSetup(HWND, UINT, WPARAM, LPARAM) noexcept;
 	static LRESULT CALLBACK HandleMsgThunk(HWND, UINT, WPARAM, LPARAM) noexcept;
 	LRESULT HandleMsg(HWND, UINT, WPARAM, LPARAM) noexcept;
-	static std::vector<WindowStatus> statuses;
-	static std::vector<std::pair<int, Window*>> activeWnds;
 	HWND hWnd;
+	Window* parent;
+	std::vector<Window*> children;
 	std::unique_ptr<Graphics> gfx;
 	const char* name;
-	int width, height, index;
+	int width, height;
 };

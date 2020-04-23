@@ -1,6 +1,6 @@
 #include "R.h"
 
-R::R(int width, int height, const char* name) : Window(width, height, name, nullptr) {}
+R::R(int width, int height, const char* name, Window* parent) : Window(width, height, name, parent) {}
 
 R::~R() {}
 
