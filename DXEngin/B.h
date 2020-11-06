@@ -6,7 +6,7 @@
 class B : public Window
 {
 public:
-	B(int, int, const char*);
+	B(int, int, const char*, Window*);
 	~B();
 	void DoFrame(float) override;
 private:

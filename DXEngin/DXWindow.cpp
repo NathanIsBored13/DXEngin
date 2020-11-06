@@ -4,9 +4,9 @@ DXWindow::DXWindow(int width, int height, const char* name, Window* parent) : Wi
 {
 	if (parent == nullptr)
 	{
-		WindowManager::RegisterWindow(new DXWindow(200, 200, "MainWindow", this));
-		WindowManager::RegisterWindow(new DXWindow(200, 200, "MainWindow", this));
-		WindowManager::RegisterWindow(new DXWindow(200, 200, "MainWindow", this));
+		WindowManager::RegisterWindow(new R(200, 200, "MainWindow", this));
+		WindowManager::RegisterWindow(new G(200, 200, "MainWindow", this));
+		WindowManager::RegisterWindow(new B(200, 200, "MainWindow", this));
 	}
 }
 

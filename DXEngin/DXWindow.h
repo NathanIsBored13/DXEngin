@@ -4,6 +4,8 @@
 #include "Window.h"
 #include "Timer.h"
 #include "R.h"
+#include "G.h"
+#include "B.h"
 
 class DXWindow : public Window
 {

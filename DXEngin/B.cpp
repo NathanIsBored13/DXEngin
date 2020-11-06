@@ -1,6 +1,6 @@
 #include "B.h"
 
-B::B(int width, int height, const char* name) : Window(width, height, name, nullptr) {}
+B::B(int width, int height, const char* name, Window* parent) : Window(width, height, name, parent) {}
 
 B::~B() {}
 

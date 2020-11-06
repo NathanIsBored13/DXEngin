@@ -4,7 +4,7 @@ Window::WindowTemplate Window::WindowTemplate::wndClass;
 
 Window::WindowTemplate::WindowTemplate() noexcept : hInst(GetModuleHandle(nullptr))
 {
-	WNDCLASSEX wnd =
+	WNDCLASSEXA wnd =
 	{
 		sizeof(wnd),
 		CS_OWNDC,
